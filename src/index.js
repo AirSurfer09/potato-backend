@@ -23,9 +23,17 @@ import httpProxy from "http-proxy";
 const proxy = httpProxy.createProxyServer({ selfHandleResponse: true });
 
 const server = http.createServer((req, res) => {
+  const incomingUrl = new URL(req.url || "", `http://${req.headers.host}`);
+  const searchParams = new URLSearchParams(incomingUrl.search);
+  const sessionId = searchParams.get("sessionid");
+
+  console.log("Incoming URL:", req.url);
+  console.log("Parsed sessionId:", sessionId);
+  console.log("Session ID", searchParams.get("sessionId"));
+  // Build the full target URL
+  const target = `https://x.convai.com/stream-v2/2713ca2a-2bd6-11f0-ad25-42010a7be01f/`;
   proxy.web(req, res, {
-    target:
-      "https://x.convai.com/stream-v2/6eda50ce-2bcf-11f0-ad25-42010a7be01f/",
+    target: target,
     changeOrigin: true,
   });
 });
@@ -41,7 +49,6 @@ proxy.on("proxyRes", (proxyRes, req, res) => {
     const responseBody = Buffer.concat(body);
 
     // Log headers before modification
-    console.log("Original headers:", proxyRes.headers);
 
     // Clean up headers
     const headers = { ...proxyRes.headers };
